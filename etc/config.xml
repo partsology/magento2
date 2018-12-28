@@ -12,6 +12,9 @@
                 <enable_device_fingerprint>1</enable_device_fingerprint>
             </general>
             <advanced>
+                <retrieve_score>1</retrieve_score>
+                <hold_orders>0</hold_orders>
+                <hold_orders_threshold>500</hold_orders_threshold>
                 <guarantee_negative_action>nothing</guarantee_negative_action>
                 <guarantee_positive_action>nothing</guarantee_positive_action>
             </advanced>

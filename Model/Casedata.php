@@ -114,6 +114,7 @@ class Casedata extends AbstractModel
         if (isset($request->score) && $case->getScore() != $request->score) {
             $case->setScore($request->score);
             $order->setSignifydScore($request->score);
+            $orderAction = $this->handleScoreChange($caseData) ?: $orderAction;
         }
 
         if (isset($request->status) && $case->getSignifydStatus() != $request->status) {
@@ -412,6 +413,7 @@ class Casedata extends AbstractModel
             // Nothing is an action from Signifyd workflow, different from when no action is given (null or empty)
             // If workflow is set to do nothing, so complete the case
             case 'nothing':
+            case null:
                 $orderAction['action'] = false;
 
                 try {
@@ -447,10 +449,12 @@ class Casedata extends AbstractModel
      */
     protected function handleStatusChange($caseData)
     {
-        if ($caseData['request']->reviewDisposition == 'FRAUDULENT') {
+        $holdBelowThreshold = $this->configHelper->getConfigData('signifyd/advanced/hold_orders', $this);
+
+        if ($holdBelowThreshold && $caseData['request']->reviewDisposition == 'FRAUDULENT') {
             return array("action" => "hold", "reason" => "review returned FRAUDULENT");
         } else {
-            if ($caseData['request']->reviewDisposition == 'GOOD') {
+            if ($holdBelowThreshold && $caseData['request']->reviewDisposition == 'GOOD') {
                 return array("action" => "unhold", "reason" => "review returned GOOD");
             }
         }
@@ -531,7 +535,7 @@ class Casedata extends AbstractModel
         $holdReleased = $this->getEntries('hold_released');
         return ($holdReleased == 1) ? true : false;
     }
-    
+
     public function getPositiveAction()
     {
         if ($this->isHoldReleased()) {
@@ -562,4 +566,20 @@ class Casedata extends AbstractModel
 
         return parent::setUpdated($updated);
     }
+
+    /**
+     * @param $caseData
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return string
+     */
+    protected function handleScoreChange($caseData)
+    {
+        $threshHold = (int) $this->configHelper->getConfigData('signifyd/advanced/hold_orders_threshold', $this);
+        $holdBelowThreshold = $this->configHelper->getConfigData('signifyd/advanced/hold_orders', $this);
+        if ($holdBelowThreshold && $caseData['request']->score <= $threshHold) {
+            return array("action" => "hold", "reason" => "score threshold failure");
+        }
+        return null;
+    }
+
 }

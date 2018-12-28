@@ -68,6 +68,26 @@
             <group id="advanced" translate="label comment" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label><![CDATA[Order Workflow
                     <p style="font-size: 12px;font-weight: normal;">Enabling any of the order workflows below will place all newly created orders "on-hold" until Signifyd has reviewed the order.</p>]]></label>
+                <field id="retrieve_score" translate="label" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Retrieve Signifyd scores</label>
+                    <comment><model>Signifyd\Connect\Model\WebhookLink</model></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="hold_orders" translate="label comment" type="select" sortOrder="33" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Place hold on orders below score threshold</label>
+                    <comment>Orders will be placed on hold below a threshold specified by you. We recommend a threshold of 500. Clicking Thumbs Up will Unhold the Order and Thumbs down will leave the Order on Hold.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="retrieve_score">1</field>
+                    </depends>
+                </field>
+                <field id="hold_orders_threshold" translate="label comment" type="text" sortOrder="34" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Hold score threshold</label>
+                    <comment>0-1000. Threshold at which orders get put on HOLD. Default is 500.</comment>
+                    <depends>
+                        <field id="hold_orders">1</field>
+                    </depends>
+                </field>
                 <field id="guarantee_positive_action" translate="label comment" type="select" sortOrder="36" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Approved Guarantees</label>
                     <comment>Select what action should be taken in Magento when an order is approved for guarantee.</comment>
@@ -95,7 +115,6 @@
                 </field>
             </group>
         </section>
-
         <section id="fraud_protection">
             <group id="signifyd">
                 <group id="config">
